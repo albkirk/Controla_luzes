@@ -3,8 +3,8 @@
 
 //System Parameters
 #define ChipID HEXtoUpperString(ESP.getChipId(), 6)
-#define ESP_SSID String("ESP-" + ChipID)              // SSID used as Acces Point
-#define Number_of_measures 10                         // Number of value samples (measurements) to calculate average
+#define ESP_SSID String("ESP-" + ChipID)                // SSID used as Acces Point
+#define Number_of_measures 10                           // Number of value samples (measurements) to calculate average
 
 // ADC to internal voltage
 #if Using_ADC == false
@@ -47,9 +47,10 @@ unsigned int LEVEL = 0;                     // [0-100]
 unsigned int LEVEL_Last = 0;                // [0-100]
 int POSITION = 0;                           // [-100,+100]
 int POSITION_Last = 0;                      // [-100,+100]
-boolean SWITCH = false;
-boolean SWITCH_Last = false;
+bool SWITCH = false;
+bool SWITCH_Last = false;
 unsigned long TIMER = 0;                     // [0-7200]  Minutes                 
+unsigned long COUNTER = 0;
 
 
 // Functions //
@@ -107,7 +108,7 @@ long getRSSI() {
 float getNTCThermister() {
   // Return temperature as Celsius
   int val = 0;
-  for(int i = 0; i < Number_of_measures; i++) {       // ADC value is read N times
+  for(int i = 0; i < Number_of_measures; i++) {         // ADC value is read N times
       val += analogRead(A0);
       delay(10);
   }
@@ -183,39 +184,40 @@ String ESPWakeUpReason() {
   return ESP.getResetReason();
 }
 
-void FormatConfig() {                                 // WARNING!! To be used only as last resource!!!
+void FormatConfig() {                                   // WARNING!! To be used only as last resource!!!
     Serial.println(ESP.eraseConfig());
     delay(5000);
     ESP.reset();
 }
 
-void blink_LED(int slot) {                            // slot range 1 to 10 =>> 3000/300
-    if (LED_esp>=0) {
+void blink_LED(unsigned int slot, int bl_LED = LED_esp, bool LED_OFF = !config.LED) { // slot range 1 to 10 =>> 3000/300
+    if (bl_LED>=0) {
         now_millis = millis() % Pace_millis;
         if (now_millis > LED_millis*(slot-1) && now_millis < LED_millis*slot-LED_millis/2 ) {
-            digitalWrite(LED_esp, boolean(config.LED));   // toggles LED status. will be restored by command below
-            delay(LED_millis/2);
+            digitalWrite(bl_LED, !LED_OFF);             // Turn LED on
+            delay(LED_millis/3);
+            digitalWrite(bl_LED, LED_OFF);              // Turn LED off
         }
     }
 }
 
-void flash_LED(unsigned int n_flash = 1) {
-    if (LED_esp>=0) {
+void flash_LED(unsigned int n_flash = 1, int fl_LED = LED_esp, bool LED_OFF = !config.LED) {
+    if (fl_LED>=0) {
         for (size_t i = 0; i < n_flash; i++) {
-            digitalWrite(LED_esp, boolean(config.LED));     // Turn LED on
+            digitalWrite(fl_LED, !LED_OFF);             // Turn LED on
             delay(LED_millis/3);
-            digitalWrite(LED_esp, boolean(!config.LED));    // Turn LED off
+            digitalWrite(fl_LED, LED_OFF);              // Turn LED off
             delay(LED_millis/3);
         }
     }
 }
 
-void Buzz(unsigned int n_beeps = 1) {                     // number of beeps 1 to 6 =>> 3000/500
+void Buzz(unsigned int n_beeps = 1) {                   // number of beeps 1 to 6 =>> 3000/500
     if (BUZZER>=0) {
         for (size_t i = 0; i < n_beeps; i++) {
-            digitalWrite(BUZZER, HIGH);               // Turn Buzzer on
+            digitalWrite(BUZZER, HIGH);                 // Turn Buzzer on
             delay(BUZZER_millis/6);
-            digitalWrite(BUZZER, LOW);                // Turn Buzzer off
+            digitalWrite(BUZZER, LOW);                  // Turn Buzzer off
             delay(BUZZER_millis/6);
         }
     }
@@ -226,7 +228,11 @@ void hw_setup() {
   // Output GPIOs
       if (LED_esp>=0) {
           pinMode(LED_esp, OUTPUT);
-          digitalWrite(LED_esp, boolean(!config.LED));                     // initialize LED off
+          digitalWrite(LED_esp, boolean(!config.LED));  // initialize LED off
+      }
+      if (BUZZER>=0) {
+          pinMode(BUZZER, OUTPUT);
+          digitalWrite(BUZZER, LOW);                    // initialize BUZZER off
       }
   // Input GPIOs
 

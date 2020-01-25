@@ -1,15 +1,16 @@
-# ESP8266 12F Project "Kick Start" Template
+# Controla-Luzes
+ESP8266-LM1 MCU based project for local and remote light control (ON/OFF) using Wall Light switch(s) and MQTT Protocol. 
 
 
 This is a personal project to create a starting point for all my ESP projects.
-It is written in C++ under PlatformIO IDE (integrated on ATOM or Visual Studio Code platforms).
+It is written in C++ under PlatformIO IDE (integrated on Visual Studio Code platforms).
 I'm coding my own variant of this popular project, with some inspiration and lessons (code Snippets) from some well know projects like:
 
 - ESPURNA: [GitHub Espurna Page](https://github.com/SensorsIot/Espurna-Framework)
 - TASMOTA: [GitHub Tasmota Page](https://github.com/arendst/Sonoff-Tasmota)
 
 ## Supported Features:
-	1. Project should run locally, even when LAN (WiFi) newtork is down (it seems obvious, but ...)
+	1. Project should run locally, even when LAN (WiFi) network and/or MQTT Server is down (it seems obvious, but ...)
 	2. Remote upgrade Over-the-Air (OTA) or/and HTTP Update.
 	3. Local Flash store configuration (ex.: DeviceName, Location, ...) 
 	4. MQTT Publish/Subscribe support
@@ -28,4 +29,3 @@ I'm coding my own variant of this popular project, with some inspiration and les
 	1. Web Page for "minimum" configuration (it kinda works...)
 	2. Power consumption optimization
 	3. Secure communication (https or other methods)
-   

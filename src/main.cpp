@@ -12,19 +12,19 @@
 #include <ESP8266WiFi.h>
 
 // HARWARE & SOFTWARE Version
-#define BRANDName "AlBros_Team"                         // Hardware brand name
-#define MODELName "GenBox_A"                            // Hardware model name
-#define SWVer "10.09"                                   // Major.Minor Software version (use String 01.00 - 99.99 format !)
+#define BRANDName "MoesHouse"                           // Hardware brand name
+#define MODELName "MS-104B"                             // Hardware model name
+#define SWVer "02.05"                                   // Major.Minor Software version (use String 01.00 - 99.99 format !)
 
 // Power Source & Battery Level
-#define BattPowered true                                // Is the device battery powered?
-#define Batt_L_Thrs 15                                   // Battery level threshold [0%-100%] (before slepping forever).
+#define BattPowered false                               // Is the device battery powered?
+#define Batt_L_Thrs 15                                  // Battery level threshold [0%-100%] (before slepping forever).
 
 // GPIO to Function Assignment
 #define Using_ADC false                                 // will this device use the ADC? (if not it will measure the internal voltage)
-#define LED_esp 2                                       // ESP Led is connected to GPIO 2. -1 means NOT used!
+#define LED_esp -1                                      // ESP Led is connected to GPIO 2. -1 means NOT used!
 #define DHTPIN -1                                       // GPIO Connected to DHT22 Data PIN. -1 means NO DHT used!
-#define BUZZER -1                                       // (Active) Buzzer pin. Suggest to use pin 0.  -1 means NOT used!
+#define BUZZER 4                                        // (Active) Buzzer pin. Suggest to use pin 0.  -1 means NOT used!
 
 
 struct __attribute__((__packed__)) strConfig {
@@ -66,14 +66,14 @@ struct __attribute__((__packed__)) strConfig {
 void config_defaults() {
     Serial.println("Setting config Default values");
 
-    strcpy(config.DeviceName, "ESP_Generic");             // Device Name
-    strcpy(config.Location, "MainRoom");                  // Device Location
+    strcpy(config.DeviceName, "Lampada");                 // Device Name
+    strcpy(config.Location, "Garagem");                   // Device Location
     strcpy(config.ClientID, "001001");                    // Client ID (used on MQTT)
     config.ONTime = 60;                                   // 0-255 seconds (Byte range)
     config.SLEEPTime = 0;                                 // 0-255 minutes (Byte range)
     config.DEEPSLEEP = false;                             // 0 - Disabled, 1 - Enabled
-    config.LED = true;                                    // 0 - OFF, 1 - ON
-    config.TELNET = false;                                // 0 - Disabled, 1 - Enabled
+    config.LED = false;                                   // 0 - OFF, 1 - ON
+    config.TELNET = true;                                 // 0 - Disabled, 1 - Enabled
     config.OTA = true;                                    // 0 - Disabled, 1 - Enabled
     config.WEB = false;                                   // 0 - Disabled, 1 - Enabled
     config.Remote_Allow = true;                           // 0 - Not Allow, 1 - Allow remote operation
@@ -84,7 +84,7 @@ void config_defaults() {
     config.IP[0] = 192; config.IP[1] = 168; config.IP[2] = 1; config.IP[3] = 10;
     config.Netmask[0] = 255; config.Netmask[1] = 255; config.Netmask[2] = 255; config.Netmask[3] = 0;
     config.Gateway[0] = 192; config.Gateway[1] = 168; config.Gateway[2] = 1; config.Gateway[3] = 254;
-    strcpy(config.NTPServerName, "pt.pool.ntp.org");         // NTP Server
+    strcpy(config.NTPServerName, "pt.pool.ntp.org");      // NTP Server
     config.Update_Time_Via_NTP_Every = 1200;              // Time in minutes to re-sync the clock
     config.TimeZone = 0;                                  // -12 to 13. See Page_NTPSettings.h why using -120 to 130 on the code.
     config.isDayLightSaving = 1;                          // 0 - Disabled, 1 - Enabled
@@ -101,8 +101,10 @@ void config_defaults() {
 }
 
 
+// Libraries to INCLUDE
 #include <storage.h>
 #include <hw8266.h>
+#include <buttons.h>
 #include <mywifi.h>
 #include <telnet.h>
 #include <mqtt.h>
@@ -128,7 +130,7 @@ void setup() {
       hw_setup();
 
   //  Project HW
-      project_hw();
+      //project_hw();
 
   // Start Storage service and read stored configuration
       storage_setup();
@@ -141,7 +143,6 @@ void setup() {
 
  // Start MQTT service
       mqtt_setup();
-      mqtt_actions();
 
   // Start NTP service
       ntp_setup();
@@ -158,7 +159,29 @@ void setup() {
 
 
   // **** Project SETUP Sketch code here...
+      buttons_setup();
       project_setup();
+      Buzz(2);
+
+
+ /*
+  uint32_t realSize = ESP.getFlashChipRealSize();
+  uint32_t ideSize = ESP.getFlashChipSize();
+  FlashMode_t ideMode = ESP.getFlashChipMode();
+
+  Serial.printf("Flash real id:   %08X\n", ESP.getFlashChipId());
+  Serial.printf("Flash real size: %u bytes\n\n", realSize);
+
+  Serial.printf("Flash ide  size: %u bytes\n", ideSize);
+  Serial.printf("Flash ide speed: %u Hz\n", ESP.getFlashChipSpeed());
+  Serial.printf("Flash ide mode:  %s\n", (ideMode == FM_QIO ? "QIO" : ideMode == FM_QOUT ? "QOUT" : ideMode == FM_DIO ? "DIO" : ideMode == FM_DOUT ? "DOUT" : "UNKNOWN"));
+
+  if (ideSize != realSize) {
+    Serial.println("Flash Chip configuration wrong!\n");
+  } else {
+    Serial.println("Flash Chip configuration ok.\n");
+  }
+*/
 
 
   // Last bit of code before leave setup
